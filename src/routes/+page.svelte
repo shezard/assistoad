@@ -13,14 +13,6 @@
 		statusInvalid = false;
 	}
 
-	async function translateData(language: string) {
-		const myquestion = `Help me to translate this text into ${language} language: \n${question}`;
-		text = '';
-		status = '';
-		statusInvalid = false;
-		askQuestion(myquestion);
-	}
-
 	async function reviewData() {
 		const myquestion = `Help me to review this text in a better english form, provide me only the reviewed text: \n${question}`;
 		text = '';
@@ -102,10 +94,6 @@
 		<div role="group">
 			<button class="lg" onclick={() => resetData()}> Reset </button>
 			<button class="lg" onclick={() => reviewData()}> Review the text </button>
-			<button class="lg" onclick={() => translateData('Italian')}> Translate to 🇮🇹 </button>
-			<button class="lg" onclick={() => translateData('English (British)')}>
-				Translate to 🇬🇧
-			</button>
 			<button class="danger lg" onclick={() => readData()}> Ask me! </button>
 		</div>
 	</form>
