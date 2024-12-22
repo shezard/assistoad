@@ -1,9 +1,12 @@
 <script lang="ts">
+	import Button from "$lib/components/ui/button/button.svelte";
+	import Textarea from "$lib/components/ui/textarea/textarea.svelte";
+
 	let text = $state('');
 	let status = $state('');
 	let statusInvalid = $state(false);
 	let question = $state(
-		'Tell me something (a quote) positive and inspirational in traditional inspirational quote with code. Give me only the quote and the author (if exists)'
+		'You are a DOOH specialist, looking to make a campaign from the following brief:\n\nI want to target french female shoppers going to Timesquare.\n\nCan you give me some recommandations ?'
 	);
 
 	async function resetData() {
@@ -13,22 +16,15 @@
 		statusInvalid = false;
 	}
 
-	async function reviewData() {
-		const myquestion = `Help me to review this text in a better english form, provide me only the reviewed text: \n${question}`;
-		text = '';
-		status = '';
-		statusInvalid = false;
-		askQuestion(myquestion);
-	}
 	async function readData() {
 		text = '';
-		const myquestion = question;
+		const prompt = question;
 		status = '';
 		statusInvalid = false;
-		askQuestion(myquestion);
+		askQuestion(prompt);
 	}
 
-	async function askQuestion(myquestion: string) {
+	async function askQuestion(prompt: string) {
 		try {
 			if (question === '') {
 				throw new Error('Question is empty');
@@ -38,7 +34,7 @@
 				method: 'POST',
 				body: JSON.stringify({
 					model: 'llama3.2',
-					prompt: myquestion
+					prompt: prompt
 				})
 			});
 			if (!response.ok) {
@@ -73,35 +69,21 @@
 </script>
 
 <main class="container">
-	<form>
-		<div class="grid">
-			<div>
-				<textarea
-					bind:value={question}
-					name="question"
-					placeholder="Write your question to Robertito AI"
-					aria-label="Professional short bio"
-					aria-invalid={statusInvalid}
-					aria-describedby="invalid-helper"
-				></textarea>
-				<small id="invalid-helper">{status}</small>
-			</div>
-			<div>
-				<textarea bind:value={text}></textarea>
-			</div>
-		</div>
+    <div class="grid gap-2">
+        <div>
+            Assistoad - 🍄 Your personnal assistant 🍄
+        </div>
+        <Textarea
+            bind:value={question}
+        ></Textarea>
+        <small id="invalid-helper">{status}</small>
 
-		<div role="group">
-			<button class="lg" onclick={() => resetData()}> Reset </button>
-			<button class="lg" onclick={() => reviewData()}> Review the text </button>
-			<button class="danger lg" onclick={() => readData()}> Ask me! </button>
-		</div>
-	</form>
+        <Textarea bind:value={text} disabled></Textarea>
+
+        <div role="group">
+            <Button onclick={() => resetData()}> Reset </Button>
+            <Button onclick={() => readData()}> Ask me! </Button>
+        </div>
+    </div>
+
 </main>
-
-<style>
-	textarea {
-		width: 100%;
-		height: 40vh;
-	}
-</style>
