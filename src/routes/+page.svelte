@@ -2,31 +2,29 @@
 	import Button from "$lib/components/ui/button/button.svelte";
 	import Textarea from "$lib/components/ui/textarea/textarea.svelte";
 
-	let text = $state('');
 	let status = $state('');
 	let statusInvalid = $state(false);
-	let question = $state(
-		'You are a DOOH specialist, looking to make a campaign from the following brief:\n\nI want to target french female shoppers going to Timesquare.\n\nCan you give me some recommandations ?'
+	let questions : string[] = $state(
+        ['You are a DOOH specialist, looking to make a campaign from the following brief:\n\nI want to target french female shoppers going to Timesquare.\n\nCan you give me some recommandations ?']
 	);
+    let responses: string[] = $state([]);
 
 	async function resetData() {
-		question = '';
-		text = '';
 		status = '';
 		statusInvalid = false;
+		questions = [''];
+		responses = [];
 	}
 
 	async function readData() {
-		text = '';
-		const prompt = question;
-		status = '';
+        status = '';
 		statusInvalid = false;
-		askQuestion(prompt);
+		askQuestion(questions[questions.length - 1]);
 	}
 
 	async function askQuestion(prompt: string) {
 		try {
-			if (question === '') {
+			if (prompt === '') {
 				throw new Error('Question is empty');
 			}
 			const url = 'http://localhost:11434/api/generate';
@@ -49,12 +47,15 @@
 				if (done) {
 					status = '';
 					statusInvalid = false;
+                    questions = [...questions, ''];
 					return;
 				}
-				const mystring = new TextDecoder().decode(value);
-				const myresponse = JSON.parse(mystring);
-				console.log(myresponse.response);
-				text = text + myresponse.response;
+				const apiResponse = new TextDecoder().decode(value);
+				const parsedReponse = JSON.parse(apiResponse);
+                responses = [
+                    ...responses.slice(0, questions.length - 1),
+                    (responses[questions.length -1] || '') + parsedReponse.response,
+                ]
 			}
 		} catch (error: unknown) {
 			if (error instanceof Error) {
@@ -73,17 +74,22 @@
         <div>
             Assistoad - 🍄 Your personnal assistant 🍄
         </div>
-        <Textarea
-            bind:value={question}
-        ></Textarea>
         <small id="invalid-helper">{status}</small>
 
-        <Textarea bind:value={text} disabled></Textarea>
+        {#each questions as _, i}
+            <Textarea
+                bind:value={questions[i]}
+                disabled={i < (questions.length - 1)}
+            ></Textarea>
 
-        <div role="group">
-            <Button onclick={() => resetData()}> Reset </Button>
-            <Button onclick={() => readData()}> Ask me! </Button>
+            {#if responses[i]}
+                <Textarea bind:value={responses[i]} disabled></Textarea>
+            {/if}
+        {/each}
+
+        <div>
+            <Button onclick={() => resetData()}>Reset</Button>
+            <Button onclick={() => readData()}>Ask me!</Button>
         </div>
     </div>
-
 </main>
