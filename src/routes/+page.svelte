@@ -67,12 +67,20 @@
 			}
 		}
 	}
+
+    function detectKeyPress(e: KeyboardEvent) {
+        if(e.key === 'Enter' && e.ctrlKey) {
+            readData()
+        }
+    }
 </script>
+
+<svelte:body onkeypress={detectKeyPress} />
 
 <main class="container">
     <div class="grid gap-2">
-        <div>
-            Assistoad - 🍄 Your personnal assistant 🍄
+        <div class="mt-4">
+            <span class="text-2xl">Assistoad</span> 🍄 Your personnal assistant 🍄
         </div>
         <small id="invalid-helper">{status}</small>
 
