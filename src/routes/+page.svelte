@@ -48,6 +48,10 @@
 					status = '';
 					statusInvalid = false;
                     questions = [...questions, ''];
+                    setTimeout(() => {
+                        document.querySelector(`#question-${questions.length - 1}`)?.focus();
+                        window.scrollTo(0, document.body.scrollHeight);
+                    }, 10)
 					return;
 				}
 				const apiResponse = new TextDecoder().decode(value);
@@ -55,7 +59,8 @@
                 responses = [
                     ...responses.slice(0, questions.length - 1),
                     (responses[questions.length -1] || '') + parsedReponse.response,
-                ]
+                ];
+                document.querySelector(`#response-${responses.length - 1}`)?.scrollIntoView(false);
 			}
 		} catch (error: unknown) {
 			if (error instanceof Error) {
@@ -77,21 +82,32 @@
 
 <svelte:body onkeypress={detectKeyPress} />
 
-<main class="container">
-    <div class="grid gap-2">
-        <div class="mt-4">
-            <span class="text-2xl">Assistoad</span> 🍄 Your personnal assistant 🍄
+<main class="container my-4">
+    <div class="flex flex-col gap-2">
+        <div class="flex flex-row items-center justify-items-center gap-2">
+            <span class="text-2xl text-lime-200">Assistoad</span> 🍄 Your personnal assistant 🍄
+            <span class="ml-auto">TODO SAVE / LOAD</span>
         </div>
         <small id="invalid-helper">{status}</small>
 
         {#each questions as _, i}
-            <Textarea
-                bind:value={questions[i]}
-                disabled={i < (questions.length - 1)}
-            ></Textarea>
+            <div class="border-l-2 border-blue-200">
+                <Textarea
+                    id="question-{i}"
+                    bind:value={questions[i]}
+                    disabled={i < (questions.length - 1)}
+                    class="rounded-l-none"
+                ></Textarea>
+            </div>
 
             {#if responses[i]}
-                <Textarea bind:value={responses[i]} disabled></Textarea>
+                <div class="border-l-2 border-lime-200">
+                    <Textarea
+                        id="response-{i}"
+                        bind:value={responses[i]} disabled
+                        class="rounded-l-none"
+                    ></Textarea>
+                </div>
             {/if}
         {/each}
 
