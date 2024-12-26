@@ -2,12 +2,11 @@
 	import Button from "$lib/components/ui/button/button.svelte";
 	import Textarea from "$lib/components/ui/textarea/textarea.svelte";
 
-	let status = $state('');
-	let statusInvalid = $state(false);
-	let questions : string[] = $state(
-        ['You are a DOOH specialist, looking to make a campaign from the following brief:\n\nI want to target french female shoppers going to Timesquare.\n\nCan you give me some recommandations ?']
-	);
-    let responses: string[] = $state([]);
+    import statusState from "$lib/store/status.svelte"
+    import ollamaState from "$lib/store/ollama.svelte";
+
+    let { status, statusInvalid } = statusState;
+    let { questions, responses } = ollamaState;
 
     let aborter = new AbortController();
 
@@ -54,7 +53,7 @@
 					statusInvalid = false;
                     questions = [...questions, ''];
                     setTimeout(() => {
-                        document.querySelector(`#question-${questions.length - 1}`)?.focus();
+                        document.querySelector<HTMLTextAreaElement>(`#question-${questions.length - 1}`)?.focus();
                         window.scrollTo(0, document.body.scrollHeight);
                     }, 10)
 					return;
