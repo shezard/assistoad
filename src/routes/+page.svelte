@@ -9,11 +9,15 @@
 	);
     let responses: string[] = $state([]);
 
+    let aborter = new AbortController();
+
 	async function resetData() {
 		status = '';
 		statusInvalid = false;
 		questions = [''];
 		responses = [];
+        aborter?.abort();
+        aborter = new AbortController();
 	}
 
 	async function readData() {
@@ -33,7 +37,8 @@
 				body: JSON.stringify({
 					model: 'llama3.2',
 					prompt: prompt
-				})
+				}),
+                signal: aborter.signal
 			});
 			if (!response.ok) {
 				throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
@@ -95,7 +100,7 @@
                 <Textarea
                     id="question-{i}"
                     bind:value={questions[i]}
-                    disabled={i < (questions.length - 1)}
+                    disabled={responses.length === questions.length}
                     class="rounded-l-none"
                 ></Textarea>
             </div>
