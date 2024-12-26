@@ -2,55 +2,38 @@
 	import Button from '$lib/components/ui/button/button.svelte';
 	import Textarea from '$lib/components/ui/textarea/textarea.svelte';
 
+	import { abortQuestion, askQuestion } from '$lib/ollama';
+
 	import statusState from '$lib/store/status.svelte';
 	import ollamaState from '$lib/store/ollama.svelte';
 
 	let { status, statusInvalid } = statusState;
 	let { questions, responses } = ollamaState;
 
-	let aborter = new AbortController();
-
 	async function resetData() {
 		status = '';
 		statusInvalid = false;
 		questions = [''];
 		responses = [];
-		aborter?.abort();
-		aborter = new AbortController();
+		abortQuestion();
 	}
 
 	async function readData() {
 		status = '';
 		statusInvalid = false;
-		askQuestion(questions[questions.length - 1]);
-	}
-
-	async function askQuestion(prompt: string) {
 		try {
-			if (prompt === '') {
-				throw new Error('Question is empty');
-			}
-			const url = 'http://localhost:11434/api/generate';
-			const response = await fetch(url, {
-				method: 'POST',
-				body: JSON.stringify({
-					model: 'llama3.2',
-					prompt: prompt
-				}),
-				signal: aborter.signal
-			});
-			if (!response.ok) {
-				throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
-			}
-			if (!response.body) {
-				throw new Error('Readable stream not found in the response.');
-			}
-			const reader = response.body.getReader();
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) {
-					status = '';
-					statusInvalid = false;
+			askQuestion(
+				questions[questions.length - 1],
+				(chunk: string) => {
+					responses = [
+						...responses.slice(0, questions.length - 1),
+						(responses[questions.length - 1] || '') + chunk
+					];
+					document
+						.querySelector(`#response-${responses.length - 1}`)
+						?.scrollIntoView(false);
+				},
+				() => {
 					questions = [...questions, ''];
 					setTimeout(() => {
 						document
@@ -58,21 +41,12 @@
 							?.focus();
 						window.scrollTo(0, document.body.scrollHeight);
 					}, 10);
-					return;
 				}
-				const apiResponse = new TextDecoder().decode(value);
-				const parsedReponse = JSON.parse(apiResponse);
-				responses = [
-					...responses.slice(0, questions.length - 1),
-					(responses[questions.length - 1] || '') + parsedReponse.response
-				];
-				document.querySelector(`#response-${responses.length - 1}`)?.scrollIntoView(false);
-			}
+			);
 		} catch (error: unknown) {
 			if (error instanceof Error) {
 				status = error.message;
 				statusInvalid = true;
-				console.error('An error occurred:', error.message);
 			} else {
 				console.error('An unknown error occurred:', error);
 			}
