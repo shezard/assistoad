@@ -66,7 +66,6 @@
 	<div class="flex flex-col gap-2">
 		<div class="flex flex-row items-center justify-items-center gap-2">
 			<span class="text-2xl text-lime-200">Assistoad</span> 🍄 Your personnal assistant 🍄
-			<span class="ml-auto">TODO SAVE / LOAD</span>
 		</div>
 		<small id="invalid-helper">{status}</small>
 
